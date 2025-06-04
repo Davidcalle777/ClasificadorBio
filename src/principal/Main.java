@@ -5,10 +5,11 @@ import com.proyecto.clasificadorbio.personas.ProcesadorPersonas;
 
 import java.util.Scanner;
 
-public class Principal {
+public class Main {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        ProcesadorPersonas procesador = new ProcesadorPersonas(scanner);
 
         ClasificadorAnimales clasificadorAnimales = new ClasificadorAnimales(scanner);
         clasificadorAnimales.ingresarAnimales();
