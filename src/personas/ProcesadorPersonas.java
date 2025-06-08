@@ -1,98 +1,86 @@
-package com.proyecto.clasificadorbio.personas;
+package clasificadorbio.personas;
 
 import com.proyecto.clasificadorbio.personas.Persona;
 
+
 import java.util.*;
-import java.util.stream.*;
 
 public class ProcesadorPersonas {
-    private List<Persona> personas;
-    private Scanner scanner;
+    private final List<Persona> personas = new ArrayList<>();
+    private final Scanner scanner;
 
     public ProcesadorPersonas(Scanner scanner) {
         this.scanner = scanner;
-        personas = new ArrayList<>();
     }
 
     public void ingresarPersonas() {
-        System.out.println("Ingrese cantidad de personas:");
-        int cantidad = Integer.parseInt(scanner.nextLine());
+        System.out.println("\nIngrese datos de personas (nombre, apellido, edad, genero, sueldo/hora, cargo)");
+        System.out.println("Escriba 'salir' como nombre para terminar.");
 
-        for (int i = 0; i < cantidad; i++) {
-            System.out.println("Nombre:");
+        while (true) {
+            System.out.print("Nombre: ");
             String nombre = scanner.nextLine();
+            if (nombre.equalsIgnoreCase("salir")) break;
 
-            System.out.println("Apellido:");
+            System.out.print("Apellido: ");
             String apellido = scanner.nextLine();
-
-            System.out.println("Edad:");
+            System.out.print("Edad: ");
             int edad = Integer.parseInt(scanner.nextLine());
-
-            System.out.println("Género (masculino, femenino):");
-            String genero = scanner.nextLine().toLowerCase();
-
-            System.out.println("Sueldo por hora:");
+            System.out.print("Género (masculino/femenino): ");
+            String genero = scanner.nextLine();
+            System.out.print("Sueldo por hora: ");
             double sueldoHora = Double.parseDouble(scanner.nextLine());
-
-            System.out.println("Cargo:");
+            System.out.print("Cargo: ");
             String cargo = scanner.nextLine();
-
-
 
             personas.add(new Persona(nombre, apellido, edad, genero, sueldoHora, cargo));
         }
     }
 
     public void procesarYMostrarDatos() {
-        System.out.println("\nTotal de personas: " + personas.size());
+        System.out.println("\n--- Estadísticas de Personas ---");
+        System.out.println("Cantidad total: " + personas.size());
 
-        double promedioEdad = personas.stream()
-                .mapToInt(Persona::getEdad)
-                .average()
-                .orElse(0);
+        double promedioEdad = personas.stream().mapToInt(Persona::getEdad).average().orElse(0);
         System.out.println("Promedio de edad: " + promedioEdad);
 
-        long mayoresEdad = personas.stream()
-                .filter(p -> p.getEdad() >= 18)
-                .count();
+        long mayoresEdad = personas.stream().filter(p -> p.getEdad() >= 18).count();
         System.out.println("Mayores de edad: " + mayoresEdad);
 
-        System.out.println("\nPersonas cuyo nombre empieza con 'A':");
+        System.out.println("Nombres que empiezan con A:");
         personas.stream()
                 .filter(p -> p.getNombre().startsWith("A"))
-                .forEach(System.out::println);
+                .forEach(p -> System.out.println(p.getNombre() + " " + p.getApellido()));
 
-        System.out.println("\nPersonas cuyo apellido contiene 'M':");
+        System.out.println("Apellidos que contienen 'M':");
         personas.stream()
                 .filter(p -> p.getApellido().toLowerCase().contains("m"))
-                .forEach(System.out::println);
+                .forEach(p -> System.out.println(p.getNombre() + " " + p.getApellido()));
 
-        System.out.println("\nDirectores masculinos y su sueldo por 8h:");
+        System.out.println("\nSueldo por 8 horas (Directores Masculinos):");
         personas.stream()
-                .filter(p -> p.getCargo().equalsIgnoreCase("director"))
                 .filter(p -> p.getGenero().equalsIgnoreCase("masculino"))
-                .peek(p -> System.out.println("Nombre: " + p.getNombre() + " " + p.getApellido() +
-                        " | Sueldo por 8 horas: $" + (p.getSueldoHora() * 8)))
-                .collect(Collectors.toList());
+                .filter(p -> p.getCargo().equalsIgnoreCase("director"))
+                .peek(p -> System.out.print("Nombre: " + p.getNombre() + " " + p.getApellido() + " "))
+                .forEach(p -> System.out.println("Sueldo por 8 horas: $" + (p.getSueldoHora() * 8)));
 
-        System.out.println("\nPrimera desarrolladora:");
+        System.out.println("\nPrimera mujer desarrolladora:");
         personas.stream()
-                .filter(p -> p.getCargo().equalsIgnoreCase("desarrollador"))
                 .filter(p -> p.getGenero().equalsIgnoreCase("femenino"))
+                .filter(p -> p.getCargo().equalsIgnoreCase("desarrollador"))
                 .findFirst()
-                .ifPresent(System.out::println);
+                .ifPresent(p -> System.out.println(p.getNombre() + " " + p.getApellido()));
 
         System.out.println("\nDesarrollador que más gana por hora:");
-        personas.stream()
+        Optional<Persona> masGana = personas.stream()
                 .filter(p -> p.getCargo().equalsIgnoreCase("desarrollador"))
-                .max(Comparator.comparingDouble(Persona::getSueldoHora))
-                .ifPresent(p -> System.out.println("Nombre: " + p.getNombre() + " " + p.getApellido() +
-                        " | Sueldo por hora: $" + p.getSueldoHora()));
+                .max(Comparator.comparing(Persona::getSueldoHora));
 
-        System.out.println("\nMujeres ordenadas por nombre:");
-        personas.stream()
-                .filter(p -> p.getGenero().equalsIgnoreCase("femenino"))
-                .sorted(Comparator.comparing(Persona::getNombre))
-                .forEach(System.out::println);
+        if (masGana.isPresent()) {
+            Persona p = masGana.get();
+            System.out.println(p.getNombre() + " " + p.getApellido() + " - $" + p.getSueldoHora() + "/hora");
+        } else {
+            System.out.println("No hay desarrolladores registrados.");
+        }
     }
 }
